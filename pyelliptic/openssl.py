@@ -4,7 +4,7 @@
 #  Copyright (C) 2011 Yann GUIBET <yannguibet@gmail.com>
 #  See LICENSE for details.
 
-import sys, ctypes
+import platform, sys, ctypes
 
 openssl = None
 
@@ -330,13 +330,11 @@ class _openssl:
             buffer = self.create_string_buffer(size)
         return buffer
 
-try:
+if platform.system() == 'Darwin':
+    openssl = _openssl('libcrypto.dylib')
+elif platform.system() == 'Linux':
     openssl = _openssl('libcrypto.so')
-except:
-    try:
-        openssl = _openssl('libeay32.dll')
-    except:
-        try:
-            openssl = _openssl('libcrypto.dylib')
-        except:
-            raise Exception("Couldn't load OpenSSL lib ...")
+elif platform.system() == 'Windows':
+    openssl = _openssl('libeay32.dll')
+else:
+    raise Exception("OS not supported.")
