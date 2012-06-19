@@ -330,11 +330,11 @@ class _openssl:
             buffer = self.create_string_buffer(size)
         return buffer
 
-if platform.system() == 'Darwin':
-    openssl = _openssl('libcrypto.dylib')
-elif platform.system() == 'Linux':
+if platform.system() == 'Linux':
     openssl = _openssl('libcrypto.so')
 elif platform.system() == 'Windows':
     openssl = _openssl('libeay32.dll')
+elif platform.system() == 'Darwin':
+    openssl = _openssl('libcrypto.dylib')
 else:
     raise Exception("OS not supported.")
