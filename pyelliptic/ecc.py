@@ -348,7 +348,7 @@ class ECC:
                                      siglen.contents, key)) != 1:
                 raise Exception("[OpenSSL] ECDSA_verify FAIL ...")
 
-            return sig.raw
+            return sig.raw[0:siglen.contents.value]
 
         finally:
             OpenSSL.EC_KEY_free(key)
@@ -482,7 +482,6 @@ class ECC:
             OpenSSL.BN_bn2bin(bn_ny, ny)
             ny = ny.raw
 
-            assert nx == x
             return (nx, ny)
         finally:
             OpenSSL.BN_free(bn_x)
