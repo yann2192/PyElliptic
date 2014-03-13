@@ -1,7 +1,7 @@
 # PyElliptic
 
 PyElliptic is a high level wrapper for the cryptographic library : OpenSSL.
-Under the GNU General Public License
+Under the GNU General Public License (see LICENSE).
 
 Python3 compatible. For GNU/Linux and Windows.
 Require OpenSSL
