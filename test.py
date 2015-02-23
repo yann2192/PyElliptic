@@ -33,7 +33,7 @@
 import unittest
 from binascii import hexlify, unhexlify
 
-from pyelliptic import Cipher, ECC
+from pyelliptic import Cipher, ECC, OpenSSL
 from pyelliptic import hash as _hash
 
 
@@ -115,6 +115,55 @@ class TestICIES(unittest.TestCase):
                                  ciphername="rc4")
         print(hexlify(ciphertext))
         self.assertEqual(plaintext, alice.decrypt(ciphertext, ciphername="rc4"))
+
+
+class TestECDSA(unittest.TestCase):
+    def setUp(self):
+        pass
+
+    def test_ecdsa(self):
+        print("\nTEST: ECDSA")
+        alice = ECC()
+        plaintext = b"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        sig = alice.sign(plaintext)
+        print(hexlify(sig))
+        res = ECC(pubkey_x=alice.pubkey_x,
+                  pubkey_y=alice.pubkey_y).verify(sig, plaintext)
+        self.assertTrue(res)
+
+    def test_ecdsa2(self):
+        print("\nTEST: ECDSA 2")
+        alice = ECC()
+        plaintext = b"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        sig = b''.join((b'\x00', alice.sign(plaintext)))
+        print(hexlify(sig))
+        res = ECC(pubkey_x=alice.pubkey_x,
+                  pubkey_y=alice.pubkey_y).verify(sig, plaintext)
+        self.assertFalse(res)
+
+    def test_ecdsa_sha256(self):
+        alg = OpenSSL.EVP_sha256
+        print("\nTEST: ECDSA SHA256")
+        alice = ECC()
+        plaintext = b"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        sig = alice.sign(plaintext, digest_alg=alg)
+        print(hexlify(sig))
+        res = ECC(pubkey_x=alice.pubkey_x,
+                  pubkey_y=alice.pubkey_y).verify(sig, plaintext,
+                                                  digest_alg=alg)
+        self.assertTrue(res)
+
+    def test_ecdsa_sha256_2(self):
+        alg = OpenSSL.EVP_sha256
+        print("\nTEST: ECDSA sha256 2")
+        alice = ECC()
+        plaintext = b"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        sig = b''.join((b'\x00', alice.sign(plaintext, digest_alg=alg)))
+        print(hexlify(sig))
+        res = ECC(pubkey_x=alice.pubkey_x,
+                  pubkey_y=alice.pubkey_y).verify(sig, plaintext,
+                                                  digest_alg=alg)
+        self.assertFalse(res)
 
 
 class TestEquals(unittest.TestCase):

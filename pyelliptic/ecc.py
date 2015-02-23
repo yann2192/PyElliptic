@@ -324,7 +324,7 @@ class ECC:
             if privkey is not None:
                 OpenSSL.BN_free(priv_key)
 
-    def sign(self, inputb):
+    def sign(self, inputb, digest_alg=OpenSSL.EVP_ecdsa):
         """
         Sign the input with ECDSA method and returns the signature
         """
@@ -363,7 +363,7 @@ class ECC:
                 raise Exception("[OpenSSL] EC_KEY_check_key FAIL ...")
 
             OpenSSL.EVP_MD_CTX_init(md_ctx)
-            OpenSSL.EVP_DigestInit(md_ctx, OpenSSL.EVP_ecdsa())
+            OpenSSL.EVP_DigestInit(md_ctx, digest_alg())
 
             if (OpenSSL.EVP_DigestUpdate(md_ctx, buff, size)) == 0:
                 raise Exception("[OpenSSL] EVP_DigestUpdate FAIL ...")
@@ -383,7 +383,7 @@ class ECC:
             OpenSSL.EC_POINT_free(pub_key)
             OpenSSL.EVP_MD_CTX_destroy(md_ctx)
 
-    def verify(self, sig, inputb):
+    def verify(self, sig, inputb, digest_alg=OpenSSL.EVP_ecdsa):
         """
         Verify the signature with the input and the local public key.
         Returns a boolean
@@ -417,7 +417,7 @@ class ECC:
                 raise Exception("[OpenSSL] EC_KEY_check_key FAIL ...")
 
             OpenSSL.EVP_MD_CTX_init(md_ctx)
-            OpenSSL.EVP_DigestInit(md_ctx, OpenSSL.EVP_ecdsa())
+            OpenSSL.EVP_DigestInit(md_ctx, digest_alg())
             if (OpenSSL.EVP_DigestUpdate(md_ctx, binputb, len(inputb))) == 0:
                 raise Exception("[OpenSSL] EVP_DigestUpdate FAIL ...")
 
