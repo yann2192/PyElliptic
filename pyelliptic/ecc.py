@@ -379,6 +379,9 @@ class ECC:
         """
         Sign the input with ECDSA method and returns the signature
         """
+        if not isinstance(inputb, (str, unicode)):
+            raise TypeError(inputb)
+
         try:
             size = len(inputb)
             buff = OpenSSL.malloc(inputb, size)
@@ -439,6 +442,11 @@ class ECC:
         Verify the signature with the input and the local public key.
         Returns a boolean
         """
+        if not isinstance(sig, (str, unicode)):
+            raise TypeError(sig)
+        if not isinstance(inputb, (str, unicode)):
+            raise TypeError(inputb)
+
         try:
             bsig = OpenSSL.malloc(sig, len(sig))
             binputb = OpenSSL.malloc(inputb, len(inputb))
