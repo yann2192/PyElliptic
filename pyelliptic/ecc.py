@@ -311,10 +311,10 @@ class ECC:
             ecdh_keylen = OpenSSL.ECDH_compute_key(
                 ecdh_keybuffer, 32, other_pub_key, own_key, 0)
 
-            if ecdh_keylen != 32:
+            if ecdh_keylen == 0:
                 raise Exception("[OpenSSL] ECDH keylen FAIL ... " + OpenSSL.get_error())
 
-            return ecdh_keybuffer.raw
+            return ecdh_keybuffer.raw[:ecdh_keylen]
 
         finally:
             OpenSSL.EC_KEY_free(other_key)
