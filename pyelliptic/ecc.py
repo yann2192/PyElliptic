@@ -341,8 +341,6 @@ class ECC:
 
     def raw_get_ecdh_key(self, pubkey_x, pubkey_y):
         try:
-            ecdh_keybuffer = OpenSSL.malloc(0, 32)
-
             other_key = OpenSSL.EC_KEY_new_by_curve_name(self.curve)
             if other_key == 0:
                 raise Exception("[OpenSSL] EC_KEY_new_by_curve_name FAIL ... " + OpenSSL.get_error())
@@ -377,10 +375,15 @@ class ECC:
                 raise Exception("[OpenSSL] EC_KEY_set_private_key FAIL ... " + OpenSSL.get_error())
 
             OpenSSL.ECDH_set_method(own_key, OpenSSL.ECDH_OpenSSL())
-            ecdh_keylen = OpenSSL.ECDH_compute_key(
-                ecdh_keybuffer, 32, other_pub_key, own_key, 0)
 
-            if ecdh_keylen != 32:
+            field_size = OpenSSL.EC_GROUP_get_degree(OpenSSL.EC_KEY_get0_group(own_key))
+            secret_len = int((field_size + 7) / 8)
+            ecdh_keybuffer = OpenSSL.malloc(0, secret_len)
+
+            ecdh_keylen = OpenSSL.ECDH_compute_key(
+                ecdh_keybuffer, secret_len, other_pub_key, own_key, 0)
+
+            if ecdh_keylen != secret_len:
                 raise Exception("[OpenSSL] ECDH keylen FAIL ... " + OpenSSL.get_error())
 
             return ecdh_keybuffer.raw
@@ -592,7 +595,12 @@ class ECC:
         blocksize = OpenSSL.get_cipher(ciphername).get_blocksize()
         iv = data[:blocksize]
         i = blocksize
-        coord_len = len(self.pubkey_x) * 2 + 1
+        own_key = OpenSSL.EC_KEY_new_by_curve_name(self.curve)
+        if own_key == 0:
+            raise Exception("[OpenSSL] EC_KEY_new_by_curve_name FAIL ... " + OpenSSL.get_error())
+        field_size = OpenSSL.EC_GROUP_get_degree(OpenSSL.EC_KEY_get0_group(own_key))
+        secret_len = int((field_size + 7) / 8)
+        coord_len = secret_len * 2 + 1
         pubkey_x, pubkey_y = ECC._decode_pubkey(data[i:i + coord_len])
         i += coord_len
         ciphertext = data[i:len(data) - 32]
