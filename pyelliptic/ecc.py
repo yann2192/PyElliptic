@@ -156,6 +156,15 @@ class ECC:
             pubkeyx = pubkeyx.raw
             OpenSSL.BN_bn2bin(pub_key_y, pubkeyy)
             pubkeyy = pubkeyy.raw
+            
+            # Adjust pubkeyx and pubkeyx size
+            field_size = OpenSSL.EC_GROUP_get_degree(ec_group)
+            secret_len = int((field_size + 7) / 8)
+
+            if len(pubkeyx) < secret_len:
+                pubkeyx = pubkeyx.rjust(secret_len, b'\0')
+            if len(pubkeyy) < secret_len:
+                pubkeyy = pubkeyy.rjust(secret_len, b'\0')
 
             return pubkeyx, pubkeyy, privkey
 
