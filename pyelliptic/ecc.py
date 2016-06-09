@@ -104,6 +104,10 @@ class ECC:
         """Computes a keypair from a secret number.
         If secret >= curve.order then secret is truncated until it becomes false"""
         try:
+            # If secret is negative, it becomes positive
+            if (secret[0] & 0x80) == 0x80:
+                secret = bytes([secret[0] & 0x7F]) + secret[1:]
+            
             # Create a BIGNUM structure (see OpenSSL documentation) from the secret number
             bn_secret = OpenSSL.BN_bin2bn(secret, len(secret), 0)
                      
@@ -125,8 +129,7 @@ class ECC:
             bn_order = OpenSSL.BN_new() # Create a BIGNUM structure to store order
             OpenSSL.EC_GROUP_get_order(ec_group, bn_order, bn_ctx); # Get the order
             while OpenSSL.BN_cmp(bn_secret, bn_order) >= 0 : # If secret >= order
-                new_number_bits = (OpenSSL.BN_num_bytes(bn_secret) - 1) * 8 # Decrease the size by 8 bits
-                OpenSSL.BN_mask_bits(bn_secret, new_number_bits) # Truncate
+                OpenSSL.BN_rshift(bn_secret, bn_secret, 8) # Right shift of 8 bits
             
             # Compute the public key
             if OpenSSL.EC_POINT_mul(ec_group, ec_point, bn_secret, 0, 0, bn_ctx) == 0:
