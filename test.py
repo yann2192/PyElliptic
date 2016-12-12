@@ -176,6 +176,20 @@ class TestCompatibilities(unittest.TestCase):
         self.assertEqual(alice2.get_pubkey(), alice.get_pubkey())
         self.assertEqual(alice2.get_privkey(), alice.get_privkey())
 
+class TestComputeKeyPair(unittest.TestCase):
+    def setUp(self):
+        pass
+
+    def test_compute_key_pair(self):
+        print("\nTEST: Compute keypair")
+        secret = b"This is a secret key for testing"
+        goodx = "6e9e41bec214a5537cc4a9469485022e01f79952aa0c5dee3144e457123c05cd"
+        goody = "a6c3f0695e9092c9b688733d3302545d887c3e08906127bf70cd9434a0d529b9"
+        pubkeyx, pubkeyy, privkey = ECC.compute_keypair(secret, curve='secp256k1')
+        print(hexlify(pubkeyx))
+        print(hexlify(pubkeyy))
+        self.assertEqual(goodx, hexlify(pubkeyx))
+        self.assertEqual(goodx, hexlify(pubkeyy))
 
 if __name__ == "__main__":
     unittest.main()
