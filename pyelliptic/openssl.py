@@ -100,6 +100,14 @@ class _OpenSSL:
         self.BN_bin2bn.argtypes = [ctypes.c_void_p, ctypes.c_int,
                                    ctypes.c_void_p]
 
+        # The following is useful for debugging and development work
+        # for libraries that use pyelliptic. This converts a big number
+        # pointer struct into it's decimal wich will allow developers
+        # to trace values more thoroughly.
+        self.BN_bn2dec = self._lib.BN_bn2dec
+        self.BN_bn2dec.restype = ctypes.c_char_p
+        self.BN_bn2dec.argtypes = [ctypes.c_void_p]
+
         self.EC_GROUP_get_degree = self._lib.EC_GROUP_get_degree
         self.EC_GROUP_get_degree.restype = ctypes.c_int
         self.EC_GROUP_get_degree.argtypes = [ctypes.c_void_p]
@@ -343,6 +351,10 @@ class _OpenSSL:
         self.EVP_sha256 = self._lib.EVP_sha256
         self.EVP_sha256.restype = ctypes.c_void_p
         self.EVP_sha256.argtypes = []
+
+        self.EVP_sha384 = self._lib.EVP_sha384
+        self.EVP_sha384.restype = ctypes.c_void_p
+        self.EVP_sha384.argtypes = []
 
         self.i2o_ECPublicKey = self._lib.i2o_ECPublicKey
         self.i2o_ECPublicKey.restype = ctypes.c_int
