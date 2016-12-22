@@ -68,7 +68,7 @@ class ECC:
     """
 
     def __init__(self, pubkey=None, privkey=None, pubkey_x=None,
-                 pubkey_y=None, raw_privkey=None, curve='sect283r1'):
+                 pubkey_y=None, raw_privkey=None, curve='prime256v1'):
         """
         For a normal and High level use, specifie pubkey,
         privkey (if you need) and the curve
@@ -340,7 +340,7 @@ class ECC:
         curve = self.curve
         try:
             key = OpenSSL.EC_KEY_new_by_curve_name(curve)
-            if key == 0:
+            if key is None:
                 raise Exception("[OpenSSL] EC_KEY_new_by_curve_name FAIL ... " + OpenSSL.get_error())
             if privkey is not None:
                 priv_key = OpenSSL.BN_bin2bn(privkey, len(privkey), 0)
