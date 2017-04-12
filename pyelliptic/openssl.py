@@ -30,6 +30,7 @@
 # IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import sys
+import os
 import ctypes
 import ctypes.util
 
@@ -519,10 +520,15 @@ class _OpenSSL:
     def get_error(self):
         return OpenSSL.ERR_error_string(OpenSSL.ERR_get_error(), None)
 
-libname = ctypes.util.find_library('crypto')
+
+libname = os.getenv('LIBCRYPTO_NAME', None)
+
 if libname is None:
-    # For Windows ...
-    libname = ctypes.util.find_library('libeay32.dll')
-if libname is None:
-    raise Exception("Couldn't load OpenSSL lib ...")
+    libname = ctypes.util.find_library('crypto')
+    if libname is None:
+        # For Windows ...
+        libname = ctypes.util.find_library('libeay32.dll')
+    if libname is None:
+        raise Exception("Couldn't load OpenSSL lib ...")
+
 OpenSSL = _OpenSSL(libname)
