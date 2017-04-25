@@ -43,7 +43,7 @@ class CipherName:
         self._blocksize = blocksize
 
     def __str__(self):
-        return ("Cipher : %s | Blocksize : %s | Fonction pointer : %s" %
+        return ("Cipher : %s | Blocksize : %s | Function pointer : %s" %
                 (self._name, str(self._blocksize), str(self._pointer)))
 
     def get_pointer(self):
@@ -64,6 +64,11 @@ class _OpenSSL:
         """
         Build the wrapper
         """
+        version_ge_ssl1p1 = False
+        parts = library.split('.')
+        if parts[2] >= 1 and parts[3] >= 1:
+            version_ge_ssl1p1 = True
+
         self._lib = ctypes.CDLL(library)
 
         self.pointer = ctypes.pointer
@@ -177,17 +182,19 @@ class _OpenSSL:
         self.EC_KEY_set_private_key.argtypes = [ctypes.c_void_p,
                                                 ctypes.c_void_p]
 
-        self.ECDH_OpenSSL = self._lib.ECDH_OpenSSL
-        self._lib.ECDH_OpenSSL.restype = ctypes.c_void_p
-        self._lib.ECDH_OpenSSL.argtypes = []
+        if not version_ge_ssl1p1:
+            self.ECDH_OpenSSL = self._lib.ECDH_OpenSSL
+            self._lib.ECDH_OpenSSL.restype = ctypes.c_void_p
+            self._lib.ECDH_OpenSSL.argtypes = []
 
         self.BN_CTX_new = self._lib.BN_CTX_new
         self._lib.BN_CTX_new.restype = ctypes.c_void_p
         self._lib.BN_CTX_new.argtypes = []
 
-        self.ECDH_set_method = self._lib.ECDH_set_method
-        self._lib.ECDH_set_method.restype = ctypes.c_int
-        self._lib.ECDH_set_method.argtypes = [ctypes.c_void_p, ctypes.c_void_p]
+        if not version_ge_ssl1p1:
+            self.ECDH_set_method = self._lib.ECDH_set_method
+            self._lib.ECDH_set_method.restype = ctypes.c_int
+            self._lib.ECDH_set_method.argtypes = [ctypes.c_void_p, ctypes.c_void_p]
 
         self.ECDH_compute_key = self._lib.ECDH_compute_key
         self.ECDH_compute_key.restype = ctypes.c_int
@@ -258,9 +265,10 @@ class _OpenSSL:
         self.EVP_rc4.restype = ctypes.c_void_p
         self.EVP_rc4.argtypes = []
 
-        self.EVP_CIPHER_CTX_cleanup = self._lib.EVP_CIPHER_CTX_cleanup
-        self.EVP_CIPHER_CTX_cleanup.restype = ctypes.c_int
-        self.EVP_CIPHER_CTX_cleanup.argtypes = [ctypes.c_void_p]
+        if not version_ge_ssl1p1:
+            self.EVP_CIPHER_CTX_cleanup = self._lib.EVP_CIPHER_CTX_cleanup
+            self.EVP_CIPHER_CTX_cleanup.restype = ctypes.c_int
+            self.EVP_CIPHER_CTX_cleanup.argtypes = [ctypes.c_void_p]
 
         self.EVP_CIPHER_CTX_free = self._lib.EVP_CIPHER_CTX_free
         self.EVP_CIPHER_CTX_free.restype = None
@@ -302,9 +310,10 @@ class _OpenSSL:
         self.EVP_DigestFinal_ex.argtypes = [ctypes.c_void_p,
                                             ctypes.c_void_p, ctypes.c_void_p]
 
-        self.EVP_ecdsa = self._lib.EVP_ecdsa
-        self._lib.EVP_ecdsa.restype = ctypes.c_void_p
-        self._lib.EVP_ecdsa.argtypes = []
+        if not version_ge_ssl1p1:
+            self.EVP_ecdsa = self._lib.EVP_ecdsa
+            self._lib.EVP_ecdsa.restype = ctypes.c_void_p
+            self._lib.EVP_ecdsa.argtypes = []
 
         self.ECDSA_sign = self._lib.ECDSA_sign
         self.ECDSA_sign.restype = ctypes.c_int
@@ -324,17 +333,18 @@ class _OpenSSL:
                                       ctypes.c_int,
                                       ctypes.c_void_p]
 
-        self.EVP_MD_CTX_create = self._lib.EVP_MD_CTX_create
-        self.EVP_MD_CTX_create.restype = ctypes.c_void_p
-        self.EVP_MD_CTX_create.argtypes = []
+        if not version_ge_ssl1p1:
+            self.EVP_MD_CTX_create = self._lib.EVP_MD_CTX_create
+            self.EVP_MD_CTX_create.restype = ctypes.c_void_p
+            self.EVP_MD_CTX_create.argtypes = []
 
-        self.EVP_MD_CTX_init = self._lib.EVP_MD_CTX_init
-        self.EVP_MD_CTX_init.restype = None
-        self.EVP_MD_CTX_init.argtypes = [ctypes.c_void_p]
+            self.EVP_MD_CTX_init = self._lib.EVP_MD_CTX_init
+            self.EVP_MD_CTX_init.restype = None
+            self.EVP_MD_CTX_init.argtypes = [ctypes.c_void_p]
 
-        self.EVP_MD_CTX_destroy = self._lib.EVP_MD_CTX_destroy
-        self.EVP_MD_CTX_destroy.restype = None
-        self.EVP_MD_CTX_destroy.argtypes = [ctypes.c_void_p]
+            self.EVP_MD_CTX_destroy = self._lib.EVP_MD_CTX_destroy
+            self.EVP_MD_CTX_destroy.restype = None
+            self.EVP_MD_CTX_destroy.argtypes = [ctypes.c_void_p]
 
         self.RAND_bytes = self._lib.RAND_bytes
         self.RAND_bytes.restype = ctypes.c_int
@@ -518,6 +528,7 @@ class _OpenSSL:
 
     def get_error(self):
         return OpenSSL.ERR_error_string(OpenSSL.ERR_get_error(), None)
+
 
 libname = ctypes.util.find_library('crypto')
 if libname is None:
